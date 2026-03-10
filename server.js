@@ -39,9 +39,8 @@ wss.on('connection', async (ws, req) => {
         rooms[roomId] = { users: new Set(), limit: userLimit };
     }
 
-    if (rooms[roomId].users.size >= rooms[roomId].limit) {
-        ws.send(JSON.stringify({ error: 'Room sudah penuh!' }));
-        return ws.close();
+    if (!rooms[roomId]) {
+        rooms[roomId] = { users: new Set(), limit: userLimit }; 
     }
 
     rooms[roomId].users.add(ws);
