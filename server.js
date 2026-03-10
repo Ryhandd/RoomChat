@@ -20,7 +20,9 @@ function generateRoomCode() {
 }
 
 wss.on('connection', (ws, req) => {
-  const params = new URLSearchParams(req.url.split('?')[1]);
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const params = url.searchParams;
+  
   const action = params.get('action');
   let roomId = params.get('room');
   const userLimit = parseInt(params.get('limit')) || 2;
