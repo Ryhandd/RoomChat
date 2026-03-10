@@ -9,6 +9,10 @@ let socket;
 function showTab(tab) {
     document.getElementById('create-tab').style.display = tab === 'create' ? 'block' : 'none';
     document.getElementById('join-tab').style.display = tab === 'join' ? 'block' : 'none';
+    
+    const buttons = document.querySelectorAll('.tab-buttons button');
+    buttons[0].classList.toggle('active', tab === 'create');
+    buttons[1].classList.toggle('active', tab === 'join');
 }
 
 function initSocket(url) {
@@ -17,22 +21,19 @@ function initSocket(url) {
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
-        // Jika server kirim info room saat pertama konek
         if (data.type === 'init') {
-            displayCode.innerText = data.roomId;
+            displayCode.innerText = data.roomId
             lobby.style.display = 'none';
             chatApp.style.display = 'flex';
             return;
         }
 
-        // Jika ada error (room penuh/tidak ada)
         if (data.error) {
             alert(data.error);
             window.location.reload();
             return;
         }
 
-        // Jika pesan chat biasa
         appendMessage('User', data.text || event.data, 'received');
     };
 
