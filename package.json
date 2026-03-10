@@ -13,6 +13,8 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1",
+    "path": "^0.12.7",
+    "pg": "^8.20.0",
     "ws": "^8.19.0"
   }
 }
