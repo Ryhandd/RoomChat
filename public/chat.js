@@ -33,6 +33,13 @@ function initSocket(url) {
                 return;
             }
 
+            if (data.type === 'history') {
+                data.data.forEach(chat => {
+                    appendMessage('User', chat.message_text, 'received');
+                });
+                return;
+            }
+
             if (data.error) {
                 alert(data.error);
                 window.location.reload();
