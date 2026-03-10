@@ -5,27 +5,26 @@ const app = express();
 
 app.use(express.static('public'));
 
-const PORT = process.env.PORT || 3138; 
-server.listen(PORT, '0.0.0.0', () => {
+const PORT = process.env.PORT || 3138;
+
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server nyala di port ${PORT}`);
 });
 
 const wss = new WebSocket.Server({ server });
 
-const rooms = {}; // Struktur: { roomId: { users: Set, limit: number } }
+const rooms = {};
 
-// Fungsi buat generate kode random (misal: 6 karakter)
 function generateRoomCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
 wss.on('connection', (ws, req) => {
   const params = new URLSearchParams(req.url.split('?')[1]);
-  const action = params.get('action'); // 'create' atau 'join'
+  const action = params.get('action');
   let roomId = params.get('room');
   const userLimit = parseInt(params.get('limit')) || 2;
 
-  // LOGIKA CREATE ROOM
   if (action === 'create') {
     roomId = generateRoomCode();
     rooms[roomId] = {
@@ -34,7 +33,6 @@ wss.on('connection', (ws, req) => {
     };
   }
 
-  // LOGIKA JOIN & VALIDASI
   if (!rooms[roomId]) {
     ws.send(JSON.stringify({ error: 'Room tidak ditemukan' }));
     return ws.close();
@@ -45,10 +43,8 @@ wss.on('connection', (ws, req) => {
     return ws.close();
   }
 
-  // Tambahkan user ke room
   rooms[roomId].users.add(ws);
   
-  // Kasih tau user roomId-nya (penting buat yang 'create')
   ws.send(JSON.stringify({ type: 'init', roomId: roomId }));
 
   ws.on('message', msg => {
