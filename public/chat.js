@@ -94,3 +94,11 @@ function handleSend() {
 
 document.getElementById('send').onclick = handleSend;
 input.onkeydown = (e) => { if(e.key === 'Enter') handleSend(); };
+
+document.getElementById('limit-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') createRoom();
+});
+
+document.getElementById('room-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') joinRoom();
+});
