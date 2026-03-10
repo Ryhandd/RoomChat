@@ -4,7 +4,7 @@ const chatDiv = document.getElementById('chat');
 const input = document.getElementById('message');
 const displayCode = document.getElementById('display-code');
 
-let socket;
+let socket = null;
 
 function showTab(tab) {
     document.getElementById('create-tab').style.display = tab === 'create' ? 'block' : 'none';
@@ -16,6 +16,10 @@ function showTab(tab) {
 }
 
 function initSocket(url) {
+    if (socket) {
+        socket.close();
+    }
+
     socket = new WebSocket(url);
 
     socket.onmessage = (event) => {
@@ -44,8 +48,7 @@ function initSocket(url) {
     };
 
     socket.onclose = () => {
-        alert("Koneksi terputus.");
-        window.location.reload();
+        console.log("Koneksi terputus.");
     };
 }
 
