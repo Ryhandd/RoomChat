@@ -19,22 +19,28 @@ function initSocket(url) {
     socket = new WebSocket(url);
 
     socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+        try {
+            const data = JSON.parse(event.data);
 
-        if (data.type === 'init') {
-            displayCode.innerText = data.roomId
-            lobby.style.display = 'none';
-            chatApp.style.display = 'flex';
-            return;
+            if (data.type === 'init') {
+                displayCode.innerText = data.roomId;
+                lobby.style.display = 'none';
+                chatApp.style.display = 'flex';
+                return;
+            }
+
+            if (data.error) {
+                alert(data.error);
+                window.location.reload();
+                return;
+            }
+
+            if (data.text) {
+                appendMessage('User', data.text, 'received');
+            }
+        } catch (e) {
+            appendMessage('User', event.data, 'received');
         }
-
-        if (data.error) {
-            alert(data.error);
-            window.location.reload();
-            return;
-        }
-
-        appendMessage('User', data.text || event.data, 'received');
     };
 
     socket.onclose = () => {
@@ -70,7 +76,7 @@ function appendMessage(senderName, text, type) {
 function handleSend() {
     const msg = input.value;
     if (msg.trim() !== "" && socket) {
-        socket.send(msg);
+        socket.send(JSON.stringify({ text: msg }));
         appendMessage('You', msg, 'sent');
         input.value = '';
     }
