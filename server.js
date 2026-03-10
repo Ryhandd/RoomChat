@@ -5,9 +5,9 @@ const app = express();
 
 app.use(express.static('public'));
 
-const PORT = process.env.PORT || 3000; // Pterodactyl biasanya pakai port dari env
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+const PORT = process.env.PORT || 3138; 
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server nyala di port ${PORT}`);
 });
 
 const wss = new WebSocket.Server({ server });
