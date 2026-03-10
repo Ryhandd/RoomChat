@@ -6,16 +6,35 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="lobby" class="overlay">
+    <div class="lobby-card">
+      <h2>RoomChat</h2>
+      <div class="tab-buttons">
+        <button onclick="showTab('create')">Create</button>
+        <button onclick="showTab('join')">Join</button>
+      </div>
 
-<div class="chat-container">
-  <div id="chat"></div>
+      <div id="create-tab" class="tab-content">
+        <input type="number" id="limit-input" placeholder="User Limit (e.g. 5)" min="2" value="2">
+        <button onclick="createRoom()">Create Room</button>
+      </div>
 
-  <div class="input-area">
-    <input id="message" placeholder="Type something..." />
-    <button id="send">Send</button>
+      <div id="join-tab" class="tab-content" style="display:none;">
+        <input type="text" id="room-input" placeholder="Enter Room Code">
+        <button onclick="joinRoom()">Join Room</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<script src="chat.js"></script>
+  <div class="chat-container" style="display:none;" id="chat-app">
+    <div class="room-info">Room Code: <span id="display-code">-</span></div>
+    <div id="chat"></div>
+    <div class="input-area">
+      <input id="message" placeholder="Type something..." />
+      <button id="send">Send</button>
+    </div>
+  </div>
+
+  <script src="chat.js"></script>
 </body>
 </html>

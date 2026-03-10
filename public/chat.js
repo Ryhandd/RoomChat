@@ -1,8 +1,59 @@
-const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-const socket = new WebSocket(`${protocol}://${window.location.host}${window.location.search}`);
+const chatApp = document.getElementById('chat-app');
+const lobby = document.getElementById('lobby');
 const chatDiv = document.getElementById('chat');
 const input = document.getElementById('message');
-const sendBtn = document.getElementById('send');
+const displayCode = document.getElementById('display-code');
+
+let socket;
+
+function showTab(tab) {
+    document.getElementById('create-tab').style.display = tab === 'create' ? 'block' : 'none';
+    document.getElementById('join-tab').style.display = tab === 'join' ? 'block' : 'none';
+}
+
+function initSocket(url) {
+    socket = new WebSocket(url);
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        // Jika server kirim info room saat pertama konek
+        if (data.type === 'init') {
+            displayCode.innerText = data.roomId;
+            lobby.style.display = 'none';
+            chatApp.style.display = 'flex';
+            return;
+        }
+
+        // Jika ada error (room penuh/tidak ada)
+        if (data.error) {
+            alert(data.error);
+            window.location.reload();
+            return;
+        }
+
+        // Jika pesan chat biasa
+        appendMessage('User', data.text || event.data, 'received');
+    };
+
+    socket.onclose = () => {
+        alert("Koneksi terputus.");
+        window.location.reload();
+    };
+}
+
+function createRoom() {
+    const limit = document.getElementById('limit-input').value;
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    initSocket(`${protocol}://${window.location.host}?action=create&limit=${limit}`);
+}
+
+function joinRoom() {
+    const code = document.getElementById('room-input').value.trim().toUpperCase();
+    if (!code) return alert("Masukkan kode!");
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    initSocket(`${protocol}://${window.location.host}?action=join&room=${code}`);
+}
 
 function appendMessage(senderName, text, type) {
     const msgWrapper = document.createElement('div');
@@ -17,22 +68,12 @@ function appendMessage(senderName, text, type) {
 
 function handleSend() {
     const msg = input.value;
-    if (msg.trim() !== "") {
+    if (msg.trim() !== "" && socket) {
         socket.send(msg);
         appendMessage('You', msg, 'sent');
         input.value = '';
     }
 }
 
-sendBtn.onclick = handleSend;
-
-input.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-        event.preventDefault(); 
-        handleSend();
-    }
-});
-
-socket.onmessage = (event) => {
-    appendMessage('User', event.data, 'received');
-};
+document.getElementById('send').onclick = handleSend;
+input.onkeydown = (e) => { if(e.key === 'Enter') handleSend(); };
