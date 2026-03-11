@@ -59,17 +59,17 @@ function initSocket(url) {
     };
 }
 
+const BACKEND_URL = "roomchat-backend-lu.onrender.com"; 
+
 function createRoom() {
     const limit = document.getElementById('limit-input').value;
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    initSocket(`${protocol}://${window.location.host}?action=create&limit=${limit}`);
+    initSocket(`wss://${BACKEND_URL}?action=create&limit=${limit}`);
 }
 
 function joinRoom() {
     const code = document.getElementById('room-input').value.trim().toUpperCase();
     if (!code) return alert("Masukkan kode!");
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    initSocket(`${protocol}://${window.location.host}?action=join&room=${code}`);
+    initSocket(`wss://${BACKEND_URL}?action=join&room=${code}`);
 }
 
 function appendMessage(senderName, text, type) {
