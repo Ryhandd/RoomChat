@@ -5,6 +5,9 @@ const { Pool } = require('pg');
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'room.html'));
+});
 
 app.get('/ping', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
