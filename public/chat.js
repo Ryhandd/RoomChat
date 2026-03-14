@@ -14,7 +14,7 @@ let currentlyTyping = new Set();
 let typingTimeouts  = {};
 
 // ⚠️ Ganti dengan URL Railway kamu setelah deploy
-const BACKEND_URL = "roomchat-production.up.railway.app";
+const BACKEND_URL = "ryzu-roomchat.up.railway.app";
 
 // ── TAB ────────────────────────────────────────
 function showTab(tab) {
