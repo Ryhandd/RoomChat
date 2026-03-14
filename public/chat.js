@@ -1,26 +1,35 @@
-const chatApp = document.getElementById('chat-app');
-const lobby = document.getElementById('lobby');
-const chatDiv = document.getElementById('chat');
-const input = document.getElementById('message');
+const chatApp     = document.getElementById('chat-app');
+const lobby       = document.getElementById('lobby');
+const chatDiv     = document.getElementById('chat');
+const input       = document.getElementById('message');
 const displayCode = document.getElementById('display-code');
+const userCountEl = document.getElementById('user-count');
+const userLimitEl = document.getElementById('user-limit');
+const typingText  = document.getElementById('typing-text');
 
 let socket = null;
+let typingTimer = null;
+let isTyping = false;
+let currentlyTyping = new Set();
+let typingTimeouts  = {};
 
+// ⚠️ Ganti dengan URL Railway kamu setelah deploy
+const BACKEND_URL = "GANTI_DENGAN_URL_RAILWAY.up.railway.app";
+
+// ── TAB ────────────────────────────────────────
 function showTab(tab) {
     document.getElementById('create-tab').style.display = tab === 'create' ? 'block' : 'none';
-    document.getElementById('join-tab').style.display = tab === 'join' ? 'block' : 'none';
-    
-    const buttons = document.querySelectorAll('.tab-buttons button');
-    buttons[0].classList.toggle('active', tab === 'create');
-    buttons[1].classList.toggle('active', tab === 'join');
+    document.getElementById('join-tab').style.display   = tab === 'join'   ? 'block' : 'none';
+    document.getElementById('tab-create').classList.toggle('active', tab === 'create');
+    document.getElementById('tab-join').classList.toggle('active', tab === 'join');
 }
 
+// ── SOCKET ─────────────────────────────────────
 function initSocket(url) {
-    if (socket) {
-        socket.close();
-    }
-
+    if (socket) socket.close();
     socket = new WebSocket(url);
+
+    socket.onopen = () => console.log('Terhubung');
 
     socket.onmessage = (event) => {
         try {
@@ -28,77 +37,157 @@ function initSocket(url) {
 
             if (data.type === 'init') {
                 displayCode.innerText = data.roomId;
-                lobby.style.display = 'none';
+                userCountEl.innerText = data.userCount;
+                userLimitEl.innerText = data.userLimit;
+                lobby.style.display   = 'none';
                 chatApp.style.display = 'flex';
+                input.focus();
                 return;
             }
-
             if (data.type === 'history') {
-                data.data.forEach(chat => {
-                    appendMessage('User', chat.message_text, 'received');
-                });
+                appendSystem('── riwayat chat ──');
+                data.data.forEach(m => appendMessage(m.username, m.message_text, 'received', m.timestamp));
+                appendSystem('── sekarang ──');
                 return;
             }
-
+            if (data.type === 'message') {
+                appendMessage(data.username, data.text, 'received', data.timestamp);
+                clearTypingFor(data.username);
+                return;
+            }
+            if (data.type === 'system') {
+                appendSystem(data.text);
+                if (data.userCount !== undefined) userCountEl.innerText = data.userCount;
+                return;
+            }
+            if (data.type === 'typing') {
+                handleTyping(data.username, data.isTyping);
+                return;
+            }
             if (data.error) {
                 alert(data.error);
                 window.location.reload();
-                return;
             }
-
-            if (data.text) {
-                appendMessage('User', data.text, 'received');
-            }
-        } catch (e) {
-            appendMessage('User', event.data, 'received');
-        }
+        } catch (e) { console.error(e); }
     };
 
-    socket.onclose = () => {
-        console.log("Koneksi terputus.");
-    };
+    socket.onclose = () => appendSystem('── koneksi terputus ──');
+    socket.onerror = () => alert('Gagal terhubung. Coba lagi.');
 }
 
-const BACKEND_URL = "roomchat-backend-lu.onrender.com"; 
-
+// ── CREATE / JOIN ──────────────────────────────
 function createRoom() {
-    const limit = document.getElementById('limit-input').value;
-    initSocket(`wss://${BACKEND_URL}?action=create&limit=${limit}`);
+    const username = document.getElementById('create-username').value.trim() || 'Anonymous';
+    const limit    = document.getElementById('limit-input').value || 2;
+    initSocket(`wss://${BACKEND_URL}?action=create&limit=${limit}&username=${encodeURIComponent(username)}`);
 }
 
 function joinRoom() {
-    const code = document.getElementById('room-input').value.trim().toUpperCase();
-    if (!code) return alert("Masukkan kode!");
-    initSocket(`wss://${BACKEND_URL}?action=join&room=${code}`);
+    const username = document.getElementById('join-username').value.trim() || 'Anonymous';
+    const code     = document.getElementById('room-input').value.trim().toUpperCase();
+    if (!code) return alert('Masukkan kode room!');
+    initSocket(`wss://${BACKEND_URL}?action=join&room=${code}&username=${encodeURIComponent(username)}`);
 }
 
-function appendMessage(senderName, text, type) {
-    const msgWrapper = document.createElement('div');
-    msgWrapper.classList.add('message-wrapper', type);
-    msgWrapper.innerHTML = `
-        <div class="sender-label">${senderName}</div>
-        <div class="bubble">${text}</div>
-    `;
-    chatDiv.appendChild(msgWrapper);
-    chatDiv.scrollTop = chatDiv.scrollHeight;
-}
-
+// ── SEND ───────────────────────────────────────
 function handleSend() {
-    const msg = input.value;
-    if (msg.trim() !== "" && socket) {
-        socket.send(JSON.stringify({ text: msg }));
-        appendMessage('You', msg, 'sent');
-        input.value = '';
+    const msg = input.value.trim();
+    if (!msg || !socket || socket.readyState !== WebSocket.OPEN) return;
+    socket.send(JSON.stringify({ text: msg }));
+    appendMessage('You', msg, 'sent', new Date().toISOString());
+    input.value = '';
+    sendTyping(false);
+}
+
+// ── TYPING ─────────────────────────────────────
+function sendTyping(state) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    if (isTyping === state) return;
+    isTyping = state;
+    socket.send(JSON.stringify({ type: 'typing', isTyping: state }));
+}
+
+input.addEventListener('input', () => {
+    sendTyping(true);
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => sendTyping(false), 2000);
+});
+
+function handleTyping(username, state) {
+    clearTimeout(typingTimeouts[username]);
+    if (state) {
+        currentlyTyping.add(username);
+        typingTimeouts[username] = setTimeout(() => clearTypingFor(username), 3000);
+    } else {
+        currentlyTyping.delete(username);
+    }
+    updateTypingUI();
+}
+
+function clearTypingFor(username) {
+    currentlyTyping.delete(username);
+    updateTypingUI();
+}
+
+function updateTypingUI() {
+    if (currentlyTyping.size === 0) {
+        typingText.classList.remove('visible');
+    } else {
+        typingText.textContent = `${[...currentlyTyping].join(', ')} sedang mengetik...`;
+        typingText.classList.add('visible');
     }
 }
 
+// ── RENDER ─────────────────────────────────────
+function appendMessage(sender, text, type, timestamp) {
+    const wrap = document.createElement('div');
+    wrap.classList.add('message-wrapper', type);
+    wrap.innerHTML = `
+        <div class="sender-label">${escapeHtml(sender)}</div>
+        <div class="bubble">${escapeHtml(text)}</div>
+        <div class="timestamp">${formatTime(timestamp)}</div>
+    `;
+    chatDiv.appendChild(wrap);
+    scrollBottom();
+}
+
+function appendSystem(text) {
+    const wrap = document.createElement('div');
+    wrap.classList.add('message-wrapper', 'system');
+    wrap.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+    chatDiv.appendChild(wrap);
+    scrollBottom();
+}
+
+// ── UTILS ──────────────────────────────────────
+function formatTime(iso) {
+    try { return new Date(iso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); }
+    catch { return ''; }
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function scrollBottom() { chatDiv.scrollTop = chatDiv.scrollHeight; }
+
+function copyRoomCode() {
+    navigator.clipboard.writeText(displayCode.innerText).then(() => showToast('COPIED!'));
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── EVENTS ─────────────────────────────────────
 document.getElementById('send').onclick = handleSend;
-input.onkeydown = (e) => { if(e.key === 'Enter') handleSend(); };
-
-document.getElementById('limit-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') createRoom();
-});
-
-document.getElementById('room-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') joinRoom();
-});
+input.addEventListener('keydown', e => { if (e.key === 'Enter') handleSend(); });
+document.getElementById('limit-input').addEventListener('keydown', e => { if (e.key === 'Enter') createRoom(); });
+document.getElementById('room-input').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
+document.getElementById('create-username').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('limit-input').focus(); });
+document.getElementById('join-username').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('room-input').focus(); });
