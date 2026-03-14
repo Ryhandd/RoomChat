@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => console.log(`Server nyala di port ${PORT}`));
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.POSTGRES_DB,
     ssl: { rejectUnauthorized: false }
 });
 
