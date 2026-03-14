@@ -8,7 +8,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/ping', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 const server = app.listen(PORT, () => console.log(`Server nyala di port ${PORT}`));
 
 const pool = new Pool({
