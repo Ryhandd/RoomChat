@@ -1,22 +1,22 @@
 :root {
-  --bg:           #0a0c0f;
-  --surface:      #10141a;
-  --surface2:     #161c24;
-  --border:       rgba(0,255,170,0.12);
-  --border-hi:    rgba(0,255,170,0.35);
-  --accent:       #00ffaa;
-  --accent2:      #00cfff;
-  --accent-dim:   rgba(0,255,170,0.08);
-  --text:         #d8e8e0;
-  --text-dim:     #5a7068;
-  --text-mid:     #8aaa9a;
-  --sent-bg:      rgba(0,207,255,0.10);
-  --sent-border:  rgba(0,207,255,0.28);
-  --recv-bg:      rgba(0,255,170,0.06);
-  --recv-border:  rgba(0,255,170,0.2);
-  --sys-bg:       rgba(255,200,0,0.06);
-  --sys-border:   rgba(255,200,0,0.2);
-  --sys-text:     #ffc84a;
+  --bg:           #000814;
+  --surface:      #001428;
+  --surface2:     #001c3c;
+  --border:       rgba(0,255,255,0.15);
+  --border-hi:    rgba(0,255,255,0.4);
+  --accent:       #00ffff;
+  --accent2:      #00ff88;
+  --accent-dim:   rgba(0,255,255,0.08);
+  --text:         #e0f7ff;
+  --text-dim:     #1a6b7f;
+  --text-mid:     #4d9fb3;
+  --sent-bg:      rgba(0,255,255,0.12);
+  --sent-border:  rgba(0,255,255,0.35);
+  --recv-bg:      rgba(0,255,136,0.10);
+  --recv-border:  rgba(0,255,136,0.25);
+  --sys-bg:       rgba(0,255,255,0.08);
+  --sys-border:   rgba(0,255,255,0.25);
+  --sys-text:     #00ffff;
   --font-mono:    'Space Mono', monospace;
   --font-body:    'DM Sans', sans-serif;
 }
@@ -34,20 +34,18 @@ body {
   overflow: hidden;
 }
 
-/* Scanlines */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   background: repeating-linear-gradient(
     0deg, transparent, transparent 2px,
-    rgba(0,255,170,0.012) 2px, rgba(0,255,170,0.012) 4px
+    rgba(0,255,255,0.015) 2px, rgba(0,255,255,0.015) 4px
   );
   pointer-events: none;
   z-index: 9999;
 }
 
-/* ── LOBBY ───────────────────────────────────── */
 .overlay {
   position: fixed;
   inset: 0;
@@ -61,10 +59,12 @@ body::before {
 .lobby-card {
   background: var(--surface);
   padding: 40px 36px;
-  border: 1px solid var(--border-hi);
+  border: 2px solid var(--border-hi);
   width: 90%;
   max-width: 400px;
-  box-shadow: 0 0 60px rgba(0,255,170,0.05);
+  box-shadow: 
+    0 0 60px rgba(0,255,255,0.15),
+    inset 0 0 40px rgba(0,255,255,0.05);
   animation: fadeUp 0.35s ease;
 }
 
@@ -80,22 +80,28 @@ body::before {
   letter-spacing: 4px;
   text-align: center;
   margin-bottom: 6px;
+  text-shadow: 0 0 10px rgba(0,255,255,0.8);
 }
-.logo-bracket { color: var(--accent); }
+.logo-bracket { 
+  color: var(--accent); 
+  text-shadow: 0 0 8px rgba(0,255,255,0.6);
+}
 
 .logo-sub {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 2px;
-  color: var(--text-dim);
+  color: var(--text-mid);
   text-align: center;
   margin-bottom: 32px;
+  text-shadow: 0 0 4px rgba(0,255,255,0.3);
 }
 
 .tab-buttons {
   display: flex;
-  border: 1px solid var(--border-hi);
+  border: 1.5px solid var(--border-hi);
   margin-bottom: 28px;
+  background: rgba(0,255,255,0.02);
 }
 .tab-buttons button {
   flex: 1;
@@ -108,9 +114,15 @@ body::before {
   font-size: 12px;
   letter-spacing: 2px;
   transition: all 0.2s;
+  text-transform: uppercase;
 }
-.tab-buttons button:first-child { border-right: 1px solid var(--border-hi); }
-.tab-buttons button.active { background: var(--accent-dim); color: var(--accent); }
+.tab-buttons button:first-child { border-right: 1.5px solid var(--border-hi); }
+.tab-buttons button.active { 
+  background: rgba(0,255,255,0.12);
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(0,255,255,0.5);
+  box-shadow: inset 0 0 20px rgba(0,255,255,0.05);
+}
 
 .input-group { margin-bottom: 16px; }
 .input-group label {
@@ -118,29 +130,36 @@ body::before {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 2px;
-  color: var(--text-dim);
+  color: var(--text-mid);
   margin-bottom: 6px;
+  text-transform: uppercase;
+  text-shadow: 0 0 4px rgba(0,255,255,0.2);
 }
 .tab-content input {
   width: 100%;
   padding: 11px 14px;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: rgba(0,20,40,0.5);
+  border: 1.5px solid var(--border);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
-.tab-content input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(0,255,170,0.07); }
+.tab-content input:focus { 
+  border-color: var(--accent);
+  box-shadow: 
+    0 0 10px rgba(0,255,255,0.3),
+    inset 0 0 10px rgba(0,255,255,0.05);
+}
 .mono-input { font-family: var(--font-mono) !important; letter-spacing: 4px; text-transform: uppercase; }
 
 .primary-btn {
   width: 100%;
   padding: 13px;
   margin-top: 8px;
-  background: var(--accent-dim);
-  border: 1px solid var(--accent);
+  background: rgba(0,255,255,0.10);
+  border: 1.5px solid var(--accent);
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -151,11 +170,17 @@ body::before {
   justify-content: center;
   gap: 10px;
   transition: all 0.2s;
+  text-transform: uppercase;
+  text-shadow: 0 0 4px rgba(0,255,255,0.3);
 }
 .primary-btn svg { width: 16px; height: 16px; }
-.primary-btn:hover { background: var(--accent); color: var(--bg); box-shadow: 0 0 24px rgba(0,255,170,0.2); }
+.primary-btn:hover { 
+  background: var(--accent);
+  color: var(--bg);
+  box-shadow: 0 0 30px rgba(0,255,255,0.5);
+  text-shadow: none;
+}
 
-/* ── CHAT CONTAINER ──────────────────────────── */
 .chat-container {
   width: 100%;
   max-width: 640px;
@@ -163,26 +188,28 @@ body::before {
   background: var(--surface);
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  border-left: 1.5px solid var(--border);
+  border-right: 1.5px solid var(--border);
 }
 @media (min-width: 640px) {
   .chat-container {
     height: 92vh;
-    border: 1px solid var(--border-hi);
-    box-shadow: 0 0 80px rgba(0,255,170,0.04);
+    border: 1.5px solid var(--border-hi);
+    box-shadow: 
+      0 0 100px rgba(0,255,255,0.15),
+      inset 0 0 50px rgba(0,255,255,0.03);
   }
 }
 
-/* ── HEADER ──────────────────────────────────── */
 .chat-header {
   padding: 14px 18px;
   background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1.5px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
+  box-shadow: inset 0 0 30px rgba(0,255,255,0.03);
 }
 .header-left  { display: flex; align-items: center; gap: 12px; }
 .header-right { display: flex; align-items: center; gap: 10px; }
@@ -193,10 +220,11 @@ body::before {
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(0,255,255,0.6);
 }
 .header-info { display: flex; flex-direction: column; gap: 1px; }
-.room-label  { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; color: var(--text-dim); }
-.room-code   { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--accent2); letter-spacing: 3px; }
+.room-label  { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+.room-code   { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: 3px; text-shadow: 0 0 10px rgba(0,255,255,0.5); }
 
 .user-count-badge {
   display: flex;
@@ -205,21 +233,23 @@ body::before {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-mid);
-  background: var(--surface2);
-  border: 1px solid var(--border);
+  background: rgba(0,255,255,0.05);
+  border: 1.5px solid var(--border);
   padding: 4px 10px;
+  text-transform: uppercase;
 }
 .dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent2);
   animation: pulse 2s infinite;
+  box-shadow: 0 0 8px rgba(0,255,136,0.8);
 }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 .copy-btn {
-  background: none;
-  border: 1px solid var(--border);
+  background: rgba(0,255,255,0.05);
+  border: 1.5px solid var(--border);
   color: var(--text-dim);
   cursor: pointer;
   padding: 6px 8px;
@@ -228,9 +258,12 @@ body::before {
   transition: all 0.2s;
 }
 .copy-btn svg { width: 14px; height: 14px; }
-.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-btn:hover { 
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(0,255,255,0.3);
+}
 
-/* ── MESSAGES ────────────────────────────────── */
 #chat {
   flex: 1;
   padding: 20px 16px;
@@ -242,7 +275,7 @@ body::before {
   scrollbar-color: var(--border) transparent;
 }
 #chat::-webkit-scrollbar       { width: 4px; }
-#chat::-webkit-scrollbar-thumb { background: var(--border); }
+#chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .message-wrapper {
   display: flex;
@@ -262,9 +295,10 @@ body::before {
   letter-spacing: 1px;
   margin-bottom: 4px;
   color: var(--text-dim);
+  text-transform: uppercase;
 }
-.sent .sender-label     { text-align: right; color: rgba(0,207,255,0.5); }
-.received .sender-label { color: rgba(0,255,170,0.5); }
+.sent .sender-label     { text-align: right; color: rgba(0,255,255,0.6); }
+.received .sender-label { color: rgba(0,255,136,0.6); }
 
 .bubble {
   padding: 10px 14px;
@@ -275,14 +309,16 @@ body::before {
 .sent .bubble {
   background: var(--sent-bg);
   border: 1px solid var(--sent-border);
-  color: #c8eeff;
+  color: #00ffff;
   border-radius: 4px 0 4px 4px;
+  box-shadow: 0 0 10px rgba(0,255,255,0.1);
 }
 .received .bubble {
   background: var(--recv-bg);
   border: 1px solid var(--recv-border);
-  color: var(--text);
+  color: #00ff88;
   border-radius: 0 4px 4px 4px;
+  box-shadow: 0 0 8px rgba(0,255,136,0.1);
 }
 .system .bubble {
   background: var(--sys-bg);
@@ -294,6 +330,8 @@ body::before {
   padding: 6px 14px;
   border-radius: 4px;
   text-align: center;
+  text-transform: uppercase;
+  box-shadow: 0 0 12px rgba(0,255,255,0.15);
 }
 
 .timestamp {
@@ -301,10 +339,10 @@ body::before {
   font-size: 9px;
   color: var(--text-dim);
   margin-top: 3px;
+  text-transform: uppercase;
 }
 .sent .timestamp { text-align: right; }
 
-/* ── TYPING ──────────────────────────────────── */
 #typing-area {
   height: 22px;
   padding: 0 18px;
@@ -316,37 +354,42 @@ body::before {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 1px;
-  color: var(--accent);
+  color: var(--accent2);
   opacity: 0;
   transition: opacity 0.3s;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(0,255,136,0.4);
 }
 #typing-text.visible { opacity: 1; }
 
-/* ── INPUT AREA ──────────────────────────────── */
 .input-area {
   padding: 14px 16px;
   background: var(--surface);
-  border-top: 1px solid var(--border);
+  border-top: 1.5px solid var(--border);
   display: flex;
   gap: 10px;
   flex-shrink: 0;
+  box-shadow: inset 0 30px 40px rgba(0,0,0,0.3);
 }
 .input-area input {
   flex: 1;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: rgba(0,20,40,0.6);
+  border: 1.5px solid var(--border);
   padding: 12px 14px;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
-.input-area input:focus    { border-color: var(--accent); }
+.input-area input:focus    { 
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(0,255,255,0.2);
+}
 .input-area input::placeholder { color: var(--text-dim); }
 .input-area button {
-  background: var(--accent-dim);
-  border: 1px solid var(--accent);
+  background: rgba(0,255,255,0.10);
+  border: 1.5px solid var(--accent);
   color: var(--accent);
   padding: 0 18px;
   cursor: pointer;
@@ -355,18 +398,23 @@ body::before {
   justify-content: center;
   transition: all 0.2s;
   flex-shrink: 0;
+  text-shadow: 0 0 4px rgba(0,255,255,0.3);
 }
 .input-area button svg   { width: 16px; height: 16px; }
-.input-area button:hover { background: var(--accent); color: var(--bg); }
+.input-area button:hover { 
+  background: var(--accent);
+  color: var(--bg);
+  box-shadow: 0 0 20px rgba(0,255,255,0.5);
+  text-shadow: none;
+}
 
-/* ── TOAST ───────────────────────────────────── */
 .toast {
   position: fixed;
   bottom: 80px;
   left: 50%;
   transform: translateX(-50%) translateY(10px);
-  background: var(--surface2);
-  border: 1px solid var(--accent);
+  background: rgba(0,20,60,0.95);
+  border: 1.5px solid var(--accent);
   color: var(--accent);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -376,5 +424,11 @@ body::before {
   transition: all 0.3s;
   pointer-events: none;
   z-index: 9998;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(0,255,255,0.4);
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
 }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.show { 
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
