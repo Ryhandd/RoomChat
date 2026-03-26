@@ -26,13 +26,21 @@ async function getHistory(roomId) {
     try {
         const snapshot = await db.collection('messages')
             .where('room_id', '==', roomId)
-            .orderBy('timestamp', 'asc').limit(50).get();
+            .orderBy('timestamp', 'asc')
+            .limit(50)
+            .get();
+        
+        console.log(`Berhasil narik ${snapshot.size} pesan riwayat untuk room ${roomId}`); // Tambahin log ini
+
         return snapshot.docs.map(doc => ({
             username: doc.data().username,
             message_text: doc.data().message_text,
             timestamp: doc.data().timestamp?.toDate?.().toISOString() || new Date().toISOString()
         }));
-    } catch (e) { return []; }
+    } catch (e) { 
+        console.error("Gagal getHistory:", e.message);
+        return []; 
+    }
 }
 
 async function saveMessage(roomId, username, text) {
