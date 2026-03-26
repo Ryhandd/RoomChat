@@ -12,36 +12,22 @@ const db = admin.firestore();
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'room.html'));
-});
+app.get('/ping', (req, res) => res.json({ status: 'ok' }));
 
-app.get('/ping', (req, res) => {
-    res.json({ status: 'ok', time: new Date().toISOString() });
-});
-
-const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
-    console.log(`Server nyala di port ${PORT}`);
-});
+const PORT = process.env.PORT || 3265;
+const server = app.listen(PORT, () => console.log(`🚀 Server nyala di port ${PORT}`));
 
 async function getHistory(roomId) {
     try {
         const snapshot = await db.collection('messages')
             .where('room_id', '==', roomId)
-            .orderBy('timestamp', 'asc')
-            .limit(50)
-            .get();
-
+            .orderBy('timestamp', 'asc').limit(50).get();
         return snapshot.docs.map(doc => ({
             username: doc.data().username,
             message_text: doc.data().message_text,
             timestamp: doc.data().timestamp?.toDate?.().toISOString() || new Date().toISOString()
         }));
-    } catch (e) {
-        console.error('getHistory error:', e);
-        return [];
-    }
+    } catch (e) { return []; }
 }
 
 async function saveMessage(roomId, username, text) {
@@ -52,9 +38,7 @@ async function saveMessage(roomId, username, text) {
             message_text: text,
             timestamp: admin.firestore.FieldValue.serverTimestamp()
         });
-    } catch (e) {
-        console.error('saveMessage error:', e);
-    }
+    } catch (e) { console.error(e); }
 }
 
 const wss = new WebSocket.Server({ server });
