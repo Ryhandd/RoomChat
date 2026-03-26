@@ -25,7 +25,7 @@ function showTab(tab) {
 
 // ── SOCKET ─────────────────────────────────────
 function initSocket(url) {
-    const socketUrl = `ws://${BACKEND_URL}?${url.split('?')}`; 
+    const socketUrl = `wss://${BACKEND_URL}?${url.split('?')}`; 
     if (socket) socket.close();
     socket = new WebSocket(socketUrl);
 
@@ -79,14 +79,14 @@ function initSocket(url) {
 function createRoom() {
     const username = document.getElementById('create-username').value.trim() || 'Anonymous';
     const limit    = document.getElementById('limit-input').value || 2;
-    initSocket(`ws://${BACKEND_URL}?action=create&limit=${limit}&username=${encodeURIComponent(username)}`);
+    initSocket(`wss://${BACKEND_URL}?action=create&limit=${limit}&username=${encodeURIComponent(username)}`);
 }
 
 function joinRoom() {
     const username = document.getElementById('join-username').value.trim() || 'Anonymous';
     const code     = document.getElementById('room-input').value.trim().toUpperCase();
     if (!code) return alert('Masukkan kode room!');
-    initSocket(`ws://${BACKEND_URL}?action=join&room=${code}&username=${encodeURIComponent(username)}`);
+    initSocket(`wss://${BACKEND_URL}?action=join&room=${code}&username=${encodeURIComponent(username)}`);
 }
 
 // ── SEND ───────────────────────────────────────
