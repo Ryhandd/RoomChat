@@ -1,2 +1,3 @@
 .env
-roomchat-ryzu*.json
+roomchat-ryzu-firebase-adminsdk-*.json
+*.json
