@@ -13,8 +13,7 @@ let isTyping = false;
 let currentlyTyping = new Set();
 let typingTimeouts  = {};
 
-// ⚠️ Ganti dengan URL Railway kamu setelah deploy
-const BACKEND_URL = "ryzu-roomchat.up.railway.app";
+const BACKEND_URL = "node2.lunes.host:3265";
 
 // ── TAB ────────────────────────────────────────
 function showTab(tab) {
@@ -26,8 +25,9 @@ function showTab(tab) {
 
 // ── SOCKET ─────────────────────────────────────
 function initSocket(url) {
+    const socketUrl = `ws://${BACKEND_URL}?${url.split('?')}`; 
     if (socket) socket.close();
-    socket = new WebSocket(url);
+    socket = new WebSocket(socketUrl);
 
     socket.onopen = () => console.log('Terhubung');
 
