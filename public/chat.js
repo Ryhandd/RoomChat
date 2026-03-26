@@ -185,7 +185,39 @@ function escapeHtml(str) {
 function scrollBottom() { chatDiv.scrollTop = chatDiv.scrollHeight; }
 
 function copyRoomCode() {
-    navigator.clipboard.writeText(displayCode.innerText).then(() => showToast('COPIED!'));
+    const code = displayCode.innerText;
+    
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(code).then(() => showToast('COPIED!'));
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = code;
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showToast('COPIED!');
+        } catch (err) {
+            alert('Gagal copy otomatis. Silakan copy manual: ' + code);
+        }
+        document.body.removeChild(textArea);
+    }
+}
+
+function leaveRoom() {
+    if (socket) {
+        socket.close();
+        socket = null;
+    }
+    
+    chatDiv.innerHTML = ''; 
+    document.getElementById('room-input').value = '';
+    
+    chatApp.style.display = 'none';
+    lobby.style.display = 'flex'; 
+    showToast('LEFT ROOM');
 }
 
 function showToast(msg) {

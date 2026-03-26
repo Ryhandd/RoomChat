@@ -264,6 +264,24 @@ body::before {
   box-shadow: 0 0 12px rgba(0,255,255,0.3);
 }
 
+.back-btn {
+  background: rgba(0,255,255,0.05);
+  border: 1.5px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+  margin-right: 8px;
+}
+.back-btn svg { width: 14px; height: 14px; }
+.back-btn:hover { 
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(0,255,255,0.3);
+}
+
 #chat {
   flex: 1;
   padding: 20px 16px;
