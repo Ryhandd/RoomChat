@@ -1,58 +1,60 @@
 const express = require('express');
 const path = require('path');
 const WebSocket = require('ws');
-const { Pool } = require('pg');
+const admin = require('firebase-admin');
+
+const serviceAccount = require("./firebase-key.json");
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore();
 
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'room.html'));
 });
 
-app.get('/ping', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
-
-const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => console.log(`Server nyala di port ${PORT}`));
-
-const pool = new Pool({
-    connectionString: process.env.POSTGRES_DB,
-    ssl: { rejectUnauthorized: false }
+app.get('/ping', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-async function initDB() {
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS messages (
-            id           SERIAL PRIMARY KEY,
-            room_id      VARCHAR(10)  NOT NULL,
-            username     VARCHAR(20)  NOT NULL,
-            message_text TEXT         NOT NULL,
-            timestamp    TIMESTAMPTZ  DEFAULT NOW()
-        );
-        CREATE INDEX IF NOT EXISTS idx_messages_room ON messages(room_id);
-    `);
-    console.log('DB siap');
-}
-initDB().catch(console.error);
+const PORT = process.env.PORT || 3000;
+const server = app.listen(PORT, () => {
+    console.log(`Server nyala di port ${PORT}`);
+});
 
 async function getHistory(roomId) {
     try {
-        const result = await pool.query(
-            `SELECT username, message_text, timestamp
-             FROM messages WHERE room_id = $1
-             ORDER BY timestamp ASC LIMIT 50`,
-            [roomId]
-        );
-        return result.rows;
-    } catch (e) { console.error('getHistory error:', e); return []; }
+        const snapshot = await db.collection('messages')
+            .where('room_id', '==', roomId)
+            .orderBy('timestamp', 'asc')
+            .limit(50)
+            .get();
+
+        return snapshot.docs.map(doc => ({
+            username: doc.data().username,
+            message_text: doc.data().message_text,
+            timestamp: doc.data().timestamp?.toDate?.().toISOString() || new Date().toISOString()
+        }));
+    } catch (e) {
+        console.error('getHistory error:', e);
+        return [];
+    }
 }
 
 async function saveMessage(roomId, username, text) {
     try {
-        await pool.query(
-            `INSERT INTO messages (room_id, username, message_text) VALUES ($1, $2, $3)`,
-            [roomId, username, text]
-        );
-    } catch (e) { console.error('saveMessage error:', e); }
+        await db.collection('messages').add({
+            room_id: roomId,
+            username: username,
+            message_text: text,
+            timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (e) {
+        console.error('saveMessage error:', e);
+    }
 }
 
 const wss = new WebSocket.Server({ server });
@@ -73,13 +75,13 @@ function broadcast(roomId, data, excludeWs = null) {
 }
 
 wss.on('connection', async (ws, req) => {
-    const url    = new URL(req.url, `http://${req.headers.host}`);
+    const url = new URL(req.url, `http://${req.headers.host}`);
     const params = url.searchParams;
 
-    const action    = params.get('action');
-    let roomId      = params.get('room');
+    const action = params.get('action');
+    let roomId = params.get('room');
     const userLimit = Math.min(parseInt(params.get('limit')) || 2, 20);
-    const username  = (params.get('username') || 'Anonymous').substring(0, 20);
+    const username = (params.get('username') || 'Anonymous').substring(0, 20);
 
     if (action === 'join') {
         if (!roomId || !rooms[roomId]) {
@@ -98,16 +100,20 @@ wss.on('connection', async (ws, req) => {
     }
 
     if (rooms[roomId].users.size >= rooms[roomId].limit) {
-        ws.send(JSON.stringify({ error: `Room sudah penuh! (max ${rooms[roomId].limit} user)` }));
+        ws.send(JSON.stringify({ 
+            error: `Room sudah penuh! (max ${rooms[roomId].limit} user)` 
+        }));
         return ws.close();
     }
 
     rooms[roomId].users.add(ws);
-    ws.roomId   = roomId;
+    ws.roomId = roomId;
     ws.username = username;
 
     ws.send(JSON.stringify({
-        type: 'init', roomId, username,
+        type: 'init',
+        roomId,
+        username,
         userCount: rooms[roomId].users.size,
         userLimit: rooms[roomId].limit
     }));
@@ -127,23 +133,38 @@ wss.on('connection', async (ws, req) => {
     ws.on('message', async msg => {
         try {
             const data = JSON.parse(msg.toString());
+
             if (data.type === 'typing') {
-                broadcast(roomId, { type: 'typing', username, isTyping: data.isTyping }, ws);
+                broadcast(roomId, {
+                    type: 'typing',
+                    username,
+                    isTyping: data.isTyping
+                }, ws);
                 return;
             }
+
             if (data.text) {
                 const timestamp = new Date().toISOString();
                 await saveMessage(roomId, username, data.text);
-                broadcast(roomId, { type: 'message', username, text: data.text, timestamp }, ws);
+                broadcast(roomId, {
+                    type: 'message',
+                    username,
+                    text: data.text,
+                    timestamp
+                }, ws);
             }
-        } catch (e) { console.error('Pesan error:', e); }
+        } catch (e) {
+            console.error('Message error:', e);
+        }
     });
 
     ws.on('close', () => {
         if (rooms[roomId]) {
             rooms[roomId].users.delete(ws);
+
             if (rooms[roomId].users.size === 0) {
                 delete rooms[roomId];
+                console.log(`Room ${roomId} dihapus (kosong)`);
             } else {
                 broadcast(roomId, {
                     type: 'system',
