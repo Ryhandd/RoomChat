@@ -3,7 +3,7 @@ const path = require('path');
 const WebSocket = require('ws');
 const admin = require('firebase-admin');
 
-const serviceAccount = require("./firebase-key.json");
+const serviceAccount = require("./roomchat-ryzu-firebase-adminsdk-fbsvc-4c970dd568.json");
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
