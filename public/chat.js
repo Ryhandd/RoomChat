@@ -24,12 +24,22 @@ function showTab(tab) {
 }
 
 // ── SOCKET ─────────────────────────────────────
-function initSocket(params) {
-    const url = `ws://${BACKEND_URL}${params}`;
-    if (socket) socket.close();
-    socket = new WebSocket(socketUrl);
+function initSocket(queryString) {
+    const url = `ws://${BACKEND_URL}${queryString}`;
+    
+    console.log("Mencoba konek ke:", url);
 
-    socket.onopen = () => console.log('Terhubung');
+    if (socket) socket.close();
+    
+    try {
+        socket = new WebSocket(url);
+    } catch (e) {
+        console.error("Gagal buat WebSocket:", e);
+        alert("Gagal konek! Pastikan 'Insecure Content' di browser sudah di-Allow.");
+        return;
+    }
+
+    socket.onopen = () => console.log('Terhubung ke Server WebSocket');
 
     socket.onmessage = (event) => {
         try {
@@ -72,21 +82,22 @@ function initSocket(params) {
     };
 
     socket.onclose = () => appendSystem('── koneksi terputus ──');
-    socket.onerror = () => alert('Gagal terhubung. Coba lagi.');
+    socket.onerror = () => alert('Gagal terhubung ke Lunes Host. Pastikan port 3265 terbuka.');
 }
 
 // ── CREATE / JOIN ──────────────────────────────
 function createRoom() {
     const username = document.getElementById('create-username').value.trim() || 'Anonymous';
     const limit    = document.getElementById('limit-input').value || 2;
-    initSocket(`ws://${BACKEND_URL}?action=create&limit=${limit}&username=${encodeURIComponent(username)}`);
+    // Panggil initSocket dengan parameter saja, karena 'ws://' dan host sudah diset di initSocket
+    initSocket(`?action=create&limit=${limit}&username=${encodeURIComponent(username)}`);
 }
 
 function joinRoom() {
     const username = document.getElementById('join-username').value.trim() || 'Anonymous';
     const code     = document.getElementById('room-input').value.trim().toUpperCase();
     if (!code) return alert('Masukkan kode room!');
-    initSocket(`ws://${BACKEND_URL}?action=join&room=${code}&username=${encodeURIComponent(username)}`);
+    initSocket(`?action=join&room=${code}&username=${encodeURIComponent(username)}`);
 }
 
 // ── SEND ───────────────────────────────────────
