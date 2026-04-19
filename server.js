@@ -12,14 +12,13 @@ const db = admin.firestore();
 const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ ROUTE ROOT (TAMBAH INI!)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/ping', (req, res) => res.json({ status: 'ok' }));
 
-const PORT = process.env.PORT || 3265;
+const PORT = process.env.PORT;
 const server = app.listen(PORT, () => console.log(`🚀 Server nyala di port ${PORT}`));
 
 async function getHistory(roomId) {
