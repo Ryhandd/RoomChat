@@ -23,35 +23,50 @@ Private, ephemeral room-based chat app built with Node.js, WebSocket, and Postgr
 | Layer    | Tech                        |
 |----------|-----------------------------|
 | Backend  | Node.js, Express, ws        |
-| Database | PostgreSQL (Railway)        |
+| Database | PostgreSQL                  |
 | Frontend | Vanilla HTML/CSS/JS         |
-| Deploy   | Railway.app                 |
+| Deploy   | Any platform (Heroku, Docker, etc.) |
 | Font     | Space Mono + DM Sans        |
 
 ---
 
-## 🚀 Deploy ke Railway
+## 🚀 Deploy Anywhere
 
-### 1. Clone & Push ke GitHub
+### 1. Clone the repository
 ```bash
 git clone https://github.com/USERNAME/roomchat.git
 cd roomchat
-git push
 ```
 
-### 2. Buat Project di Railway
-1. Buka [railway.app](https://railway.app) → **Login with GitHub**
-2. **New Project → Deploy from GitHub repo** → pilih repo ini
+### 2. Install dependencies
+```bash
+npm install
+```
 
-### 3. Tambah PostgreSQL
-Di dashboard Railway → **+ New → Database → PostgreSQL**
-Railway otomatis inject variable database ke service.
+### 3. Set up environment variables
+Create a `.env` file:
+```env
+PORT=3000
+POSTGRES_DB=postgresql://username:password@host:port/database
+```
 
-### 4. Link Database ke Service
-Di service RoomChat → **Variables** → pastikan ada variable `POSTGRES_DB` yang berisi connection string PostgreSQL.
+### 4. Start the application
+```bash
+npm start
+```
 
-### 5. Generate Domain
-**Settings → Networking → Generate Domain**
+### 5. Open your browser
+Visit `http://localhost:3000` to use the chat app.
+
+---
+
+## 🐳 Docker Deployment (Optional)
+
+You can also deploy using Docker:
+```bash
+docker build -t roomchat .
+docker run -p 3000:3000 -e PORT=3000 -e POSTGRES_DB=your-postgres-url roomchat
+```
 
 ### 6. Update BACKEND_URL
 Edit `public/chat.js` baris paling atas:
@@ -62,16 +77,16 @@ Push → Railway auto-redeploy.
 
 ---
 
-## 📁 Struktur Project
+## 📁 Project Structure
 ```
 roomchat/
 ├── public/
-│   ├── index.html      # UI utama
+│   ├── index.html      # Main UI
 │   ├── style.css       # Styling (terminal/hacker aesthetic)
 │   └── chat.js         # Frontend logic + WebSocket client
 ├── server.js           # Backend: Express + WebSocket + PostgreSQL
 ├── package.json
-└── railway.toml        # Railway deployment config
+└── railway.toml        # Railway deployment config (optional)
 ```
 
 ---
@@ -80,8 +95,8 @@ roomchat/
 
 | Variable      | Keterangan                              |
 |---------------|-----------------------------------------|
-| `PORT`        | Otomatis di-inject Railway              |
-| `POSTGRES_DB` | Connection string PostgreSQL dari Railway |
+| `PORT`        | Port number for the server (default: 3000) |
+| `POSTGRES_DB` | PostgreSQL connection string            |
 
 ---
 
