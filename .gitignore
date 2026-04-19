@@ -1,3 +1,5 @@
+node_modules
 .env
-roomchat-ryzu-firebase-adminsdk-*.json
 *.json
+!package.json
+!package-lock.json
